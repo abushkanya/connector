@@ -114,10 +114,8 @@ db.users.add(
 ).exec()
 
 # Add multiple records
-users = db.users
-users.add(username="user1", email="user1@example.com")
-users.add(username="user2", email="user2@example.com")
-users.exec()
+db.users.add(username="user1", email="user1@example.com").exec()
+db.users.add(username="user2", email="user2@example.com").exec()
 ```
 
 #### Update Operations
@@ -127,7 +125,7 @@ users.exec()
 db.users.get(id=1).update(status="inactive").exec()
 
 # Update multiple records
-db.users.equal(status="pending") \
+db.users.get(status="pending") \
         .update(status="active") \
         .exec()
 ```
