@@ -5,7 +5,6 @@ import psycopg2
 import uuid
 import os
 from tabulate import tabulate
-import copy
 
 class ConnectorQuery(object):
     """docstring for ConnectorQuery."""
@@ -630,24 +629,19 @@ class PostgreSQLConnector(object):
                     for cols in columns:
                         _query += f"{cols['name']} {cols['type']}, "
                         if cols["is_primary"]:
-                            _query = _query[:-2] + f" primary key, "
+                            _query = _query[:-2] + " primary key, "
                         if cols["default"]:
                             if isinstance(cols["default"], str):
                                 _query = _query[:-2] + f" default '{cols['default']}', "
                             else:
                                 _query = _query[:-2] + f" default {cols['default']}, "
                         if cols["not_null"]:
-                            _query = _query[:-2] + f" NOT NULL, "
+                            _query = _query[:-2] + " NOT NULL, "
                         if cols["unique"]:
-                            _query = _query[:-2] + f" UNIQUE, "
-                        if "references" in cols:
-                            if cols["references"]["table"] and cols["references"]["column"]:
-                                _query = _query[:-2] + f" REFERENCES {cols['references']['table']} ({cols['references']['column']}), "
-                        if "langs" in cols:
-                            if cols["langs"]:
-                                extra_cols += self.append_extra_cols(cols, [])
-                    if "langs" in cols:
-                        if cols["langs"]:
+                            _query = _query[:-2] + " UNIQUE, "
+                        if "references" in cols and cols["references"].get("table") and cols["references"].get("column"):
+                            _query = _query[:-2] + f" REFERENCES {cols['references']['table']} ({cols['references']['column']}), "
+                        if cols.get("langs"):
                             extra_cols += self.append_extra_cols(cols, [])
                     for cols in extra_cols:
                         _query += f"{cols['name']} {cols['type']}, "
@@ -674,24 +668,19 @@ class PostgreSQLConnector(object):
                         if cols["name"] not in colnames:
                             _query += f"ALTER TABLE {each['name']} ADD COLUMN {cols['name']} {cols['type']}  "
                             if cols["is_primary"]:
-                                _query += f" primary key, "
+                                _query += " primary key, "
                             if cols["default"]:
                                 if isinstance(cols["default"], str):
                                     _query = _query[:-2] + f" default '{cols['default']}', "
                                 else:
                                     _query = _query[:-2] + f" default {cols['default']}, "
                             if cols["not_null"]:
-                                _query = _query[:-2] + f" NOT NULL, "
+                                _query = _query[:-2] + " NOT NULL, "
                             if cols["unique"]:
-                                _query = _query[:-2] + f" UNIQUE, "
-                            if "references" in cols:
-                                if cols["references"]["table"] and cols["references"]["column"]:
-                                    _query = _query[:-2] + f" REFERENCES {cols['references']['table']} ({cols['references']['column']}), "
-                            if "langs" in cols:
-                                if cols["langs"]:
-                                    extra_cols += self.append_extra_cols(cols, colnames)
-                        if "langs" in cols:
-                            if cols["langs"]:
+                                _query = _query[:-2] + " UNIQUE, "
+                            if "references" in cols and cols["references"].get("table") and cols["references"].get("column"):
+                                _query = _query[:-2] + f" REFERENCES {cols['references']['table']} ({cols['references']['column']}), "
+                            if cols.get("langs"):
                                 extra_cols += self.append_extra_cols(cols, colnames)
                     for cols in extra_cols:
                         _query += f"ALTER TABLE {each['name']} ADD COLUMN {cols['name']} {cols['type']}; "
