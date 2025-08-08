@@ -741,14 +741,15 @@ class PostgreSQLConnector(object):
 
     def _init_columns(self):
         cursor = self.conn.cursor()
-        q = """SELECT c.column_name, c.data_type, tc.table_name
-            FROM information_schema.table_constraints tc
-            JOIN information_schema.constraint_column_usage AS ccu USING (constraint_schema, constraint_name)
-            JOIN information_schema.columns AS c ON c.table_schema = tc.constraint_schema
-              AND tc.table_name = c.table_name AND ccu.column_name = c.column_name"""
+        q = """SELECT kcu.table_schema, kcu.table_name, string_agg(kcu.column_name, ',' ORDER BY kcu.ordinal_position) AS pk_columns
+                FROM information_schema.table_constraints AS tc
+                JOIN information_schema.key_column_usage AS kcu ON tc.constraint_name   = kcu.constraint_name AND tc.constraint_schema = kcu.constraint_schema AND tc.table_name = kcu.table_name
+                WHERE tc.constraint_type = 'PRIMARY KEY' AND kcu.table_schema NOT IN ('information_schema', 'pg_catalog') AND kcu.table_schema NOT LIKE 'pg\_%' ESCAPE '\'
+                GROUP BY kcu.table_schema, kcu.table_name ORDER BY kcu.table_schema, kcu.table_name;
+                """
         cursor.execute(q)
         for each in cursor.fetchall():
-            self.primary_columns[each[2]] = each[0]
+            self.primary_columns[each[1]] = each[2]
 
         for each in self.tables:
             q = f"SELECT * FROM {each} LIMIT 0"
