@@ -1,4 +1,4 @@
-"""Scratch: exercise mixed add+update+delete batches for the review."""
+"""Mixed-verb atomic batches: add+update+delete in one transaction."""
 
 import pytest
 
